@@ -25,7 +25,8 @@ Validate basic project creation.
   * Project contents are created.
     * Verify that a run configuration (`main.dart`) is enabled in the run/debug selector.
   * Navigation works.
-    * Open `lib/main.dart` and navigate to `ThemeData`.
+    * Open `lib/main.dart` and navigate to `Scaffold`, from line 37 or so.
+    * Verify that the new editor includes a sample creation banner.
   * There are no analysis errors or warnings.
   * Pub operations work.
     * Open `pubspec.yaml` and click the "Packages get" and "Packages upgrade" links.
@@ -120,7 +121,7 @@ In the newly created app:
 * open the inspector
 * change the display by clicking `Render Tree` and the refresh button
 * open the performance view
-* (in Android Studio): verify that the memory view is active and the performance view is not
+* (in Android Studio): verify that the performance view is active and the memory view is not
 * hit resume in the debugger
 
 ## Hot Reload
@@ -143,7 +144,7 @@ Keybindings:
 ## Hot Restart
 
 * change the text and counter line back
-* hit the `Full Application Restart` button (or hit the Debug button again, or cmd-shift-s / ctrl-shift-s)
+* hit the `Flutter Hot Restart` button (or hit the Debug button again, or cmd-shift-s / ctrl-shift-s)
 * validate that the text and state resets, and the count increases
 
 ## Debugging Sessions

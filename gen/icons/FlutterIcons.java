@@ -25,6 +25,7 @@ public class FlutterIcons {
 
   public static final Icon OpenObservatory = load("/icons/observatory.png");
   public static final Icon OpenObservatoryGroup = load("/icons/observatory_overflow.png");
+  public static final Icon Dart_16 = load("/icons/dart_16.svg");
 
   public static final Icon OpenTimeline = load("/icons/timeline.png");
 
@@ -33,6 +34,10 @@ public class FlutterIcons {
 
   public static final Icon HotReloadRun = load("/icons/reload_run.png");
   public static final Icon HotReloadDebug = load("/icons/reload_debug.png");
+
+  public static final Icon DebugBanner = load("/icons/debugBanner.png");
+  public static final Icon DebugPaint = load("/icons/debugPaint.png");
+  public static final Icon RepaintRainbow = load("/icons/repaintRainbow.png");
 
   public static final Icon BazelRun = load("/icons/bazel_run.png");
 
@@ -78,6 +83,10 @@ public class FlutterIcons {
   public static final Icon Up = load("/icons/preview/up.png");
   public static final Icon Down = load("/icons/preview/down.png");
   public static final Icon ExtractMethod = load("/icons/preview/extract_method.png");
+
+  // Flutter profiler
+  public static final Icon Snapshot = load("/icons/profiler/snapshot_color_1x_24dp.png");
+  public static final Icon ResetMemoryStats = load("/icons/profiler/reset_icon.png");
 
   public static class State {
     public static final Icon RedProgr = load("/icons/perf/RedProgr.png"); // 16x16

@@ -24,10 +24,11 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Determines when we can run a test using "flutter test".
  */
-public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
+public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConfig> {
+  private final TestConfigUtils testConfigUtils = TestConfigUtils.getInstance();
 
-  protected TestConfigProducer() {
-    super(TestConfigType.getInstance());
+  protected FlutterTestConfigProducer() {
+    super(FlutterTestConfigType.getInstance());
   }
 
   private static boolean isFlutterContext(@NotNull ConfigurationContext context) {
@@ -55,7 +56,7 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
     }
 
     if (supportsFiltering(config.getSdk())) {
-      final String testName = TestConfigUtils.findTestName(elt);
+      final String testName = testConfigUtils.findTestName(elt);
       if (testName != null) {
         return setupForSingleTest(config, context, file, testName);
       }
@@ -121,7 +122,7 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
 
     if (!FlutterRunConfigurationProducer.hasDartFile(context, fileOrDir.getPath())) return false;
 
-    final String testName = TestConfigUtils.findTestName(context.getPsiLocation());
+    final String testName = testConfigUtils.findTestName(context.getPsiLocation());
     if (config.getFields().getScope() == TestFields.Scope.NAME) {
       return testName != null && testName.equals(config.getFields().getTestName());
     }

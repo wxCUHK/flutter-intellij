@@ -8,19 +8,23 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunnerLayoutUi;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.Content;
 import com.intellij.xdebugger.XDebugSession;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterUtils;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.server.vmService.DartVmServiceDebugProcess;
-import io.flutter.view.*;
+import io.flutter.view.FlutterViewMessages;
+import io.flutter.view.ToolbarComboBoxAction;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -99,7 +103,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     // Add actions common to the run and debug windows.
     final Computable<Boolean> isSessionActive = () -> app.isStarted() && getVmConnected() && !getSession().isStopped();
     final Computable<Boolean> canReload = () -> app.getLaunchMode().supportsReload() && isSessionActive.compute() && !app.isReloading();
-    final Computable<Boolean> observatoryAvailable = () -> isSessionActive.compute() && app.getConnector().getBrowserUrl() != null;
+    final Computable<Boolean> debugUrlAvailable = () -> isSessionActive.compute() && app.getConnector().getBrowserUrl() != null;
 
     if (app.getMode() == RunMode.DEBUG) {
       topToolbar.addSeparator();
@@ -110,8 +114,9 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     topToolbar.addAction(new ReloadFlutterApp(app, canReload));
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
-    topToolbar.addAction(new OpenFlutterViewAction(isSessionActive));
-    topToolbar.addAction(new OverflowAction(app, observatoryAvailable));
+    topToolbar.addAction(new OpenDevToolsAction(app.getConnector(), debugUrlAvailable));
+    topToolbar.addSeparator();
+    topToolbar.addAction(new OverflowAction(app, debugUrlAvailable));
 
     // Don't call super since we have our own observatory action.
   }
@@ -137,7 +142,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
           GuiUtils.runOrInvokeAndWait(() -> ui.removeContent(c, false /* dispose? */));
         }
         catch (InvocationTargetException | InterruptedException e) {
-          LOG.warn(e);
+          FlutterUtils.warn(LOG, e);
         }
       }
     }

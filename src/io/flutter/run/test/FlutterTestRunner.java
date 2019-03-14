@@ -23,6 +23,7 @@ import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterUtils;
 import io.flutter.run.PositionMapper;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
@@ -33,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Runs a Flutter test configuration in the debugger.
  */
-public class DebugTestRunner extends GenericProgramRunner {
+public class FlutterTestRunner extends GenericProgramRunner {
   @NotNull
   @Override
   public String getRunnerId() {
@@ -165,7 +166,7 @@ public class DebugTestRunner extends GenericProgramRunner {
         obj = elem.getAsJsonObject();
       }
       catch (JsonSyntaxException e) {
-        LOG.error("Unable to parse JSON from Flutter test", e);
+        FlutterUtils.warn(LOG, "Unable to parse JSON from Flutter test", e);
         return;
       }
 
@@ -178,19 +179,19 @@ public class DebugTestRunner extends GenericProgramRunner {
 
       final JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
       if (primEvent == null) {
-        LOG.error("Missing event field in JSON from Flutter test: " + obj);
+        FlutterUtils.warn(LOG, "Missing event field in JSON from Flutter test: " + obj);
         return;
       }
 
       final String eventName = primEvent.getAsString();
       if (eventName == null) {
-        LOG.error("Unexpected event field in JSON from Flutter test: " + obj);
+        FlutterUtils.warn(LOG, "Unexpected event field in JSON from Flutter test: " + obj);
         return;
       }
 
       final JsonObject params = obj.getAsJsonObject("params");
       if (params == null) {
-        LOG.error("Missing parameters in event from Flutter test: " + obj);
+        FlutterUtils.warn(LOG, "Missing parameters in event from Flutter test: " + obj);
         return;
       }
 
@@ -203,5 +204,5 @@ public class DebugTestRunner extends GenericProgramRunner {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(DebugTestRunner.class);
+  private static final Logger LOG = Logger.getInstance(FlutterTestRunner.class);
 }

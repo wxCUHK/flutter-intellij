@@ -16,12 +16,10 @@ import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.*;
 import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterLaunchMode;
@@ -31,6 +29,7 @@ import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -175,6 +174,10 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_UPGRADE);
   }
 
+  public FlutterCommand flutterPackagesPub(@Nullable PubRoot root, String... args) {
+    return new FlutterCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, args);
+  }
+
   public FlutterCommand flutterMakeHostAppEditable(@NotNull PubRoot root) {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.MAKE_HOST_APP_EDITABLE);
   }
@@ -187,8 +190,13 @@ public class FlutterSdk {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.CONFIG, additionalArgs);
   }
 
-  public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device,
-                                   @NotNull RunMode mode, @NotNull FlutterLaunchMode flutterLaunchMode, @NotNull Project project, String... additionalArgs) {
+  public FlutterCommand flutterRun(@NotNull PubRoot root,
+                                   @NotNull VirtualFile main,
+                                   @Nullable FlutterDevice device,
+                                   @NotNull RunMode mode,
+                                   @NotNull FlutterLaunchMode flutterLaunchMode,
+                                   @NotNull Project project,
+                                   String... additionalArgs) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
     if (FlutterSettings.getInstance().isVerboseLogging()) {
@@ -225,7 +233,7 @@ public class FlutterSdk {
     }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
   }
 
   public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device,
@@ -258,7 +266,7 @@ public class FlutterSdk {
     }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{ }));
   }
 
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
@@ -266,7 +274,7 @@ public class FlutterSdk {
     args.add("--machine");
     args.add("--device-id=flutter-tester");
     args.add(mainPath);
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{ }));
   }
 
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
@@ -303,7 +311,7 @@ public class FlutterSdk {
       args.add(FileUtil.toSystemDependentName(mainPath));
     }
 
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{}));
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{ }));
   }
 
   /**
@@ -334,7 +342,7 @@ public class FlutterSdk {
       return flutterBin.findFileByRelativePath("cache/dart-sdk") != null;
     }
     catch (InterruptedException e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
       return false;
     }
   }
@@ -351,6 +359,17 @@ public class FlutterSdk {
   @Nullable
   public PubRoot createFiles(@NotNull VirtualFile baseDir, @Nullable Module module, @Nullable ProcessListener listener,
                              @Nullable FlutterCreateAdditionalSettings additionalSettings) {
+    // Sample projects overwrite project directory contents which causes the Android Support plugin to get confused.
+    // (See: https://github.com/flutter/flutter-intellij/issues/3120).
+    // As a work-around, we remove sample basedir project directory contents proactively.
+    if (additionalSettings != null && additionalSettings.getSampleContent() != null) {
+      for (VirtualFile f : baseDir.getChildren()) {
+        final File file = VfsUtilCore.virtualToIoFile(f);
+        FileUtil.delete(file);
+      }
+      baseDir.refresh(false, true);
+    }
+
     final Process process;
     if (module == null) {
       process = flutterCreate(baseDir, additionalSettings).start(null, listener);
@@ -368,7 +387,7 @@ public class FlutterSdk {
       }
     }
     catch (InterruptedException e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
       return null;
     }
 
@@ -501,7 +520,7 @@ public class FlutterSdk {
           final JsonParser jp = new JsonParser();
           final JsonElement elem = jp.parse(stdout.toString());
           if (elem.isJsonNull()) {
-            LOG.warn("Invalid Json from flutter config");
+            FlutterUtils.warn(LOG, "Invalid Json from flutter config");
             return null;
           }
 

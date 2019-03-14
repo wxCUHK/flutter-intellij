@@ -3,15 +3,17 @@
 <idea-plugin>
   <id>io.flutter</id>
   <name>Flutter</name>
-  <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
-    cross-platform, high-performance mobile apps on both Android and iOS.
+  <description>
+    Support for developing Flutter applications. Flutter gives developers an easy and productive
+    way to build and deploy cross-platform, high-performance mobile apps for both Android and iOS.
+    Installing this plugin will also install the Dart plugin.
   </description>
   <!--suppress PluginXmlValidity -->
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
   
-  <idea-version since-build="181.0" until-build="183.*"/>
+  <idea-version since-build="182.5107.16" until-build="192.SNAPSHOT"/>
 
   <depends>Dart</depends>
 
@@ -27,6 +29,69 @@
 
   <change-notes>
     <![CDATA[
+<h2>33.3</h2>
+<ul>
+  <li>Fix an issue with an IllegalArgumentException when running Flutter apps</li>
+</ul>
+<h2>33.2</h2>
+<ul>
+  <li>Support IntelliJ 2018.3.3</li>
+</ul>
+<h2>33.1</h2>
+<ul>
+  <li>add menu and toolbar button to open Flutter DevTools</li>
+  <li>fix Gradle sync issue for Android Studio 3.3.1</li>
+  <li>fix highlighting of the Go link in sample banner</li>
+</ul>
+<h2>33.0</h2>
+<ul>
+  <li>update build for Android Studio 3.3.1</li>
+  <li>reorder console filters so links work</li>
+  <li>more intelligently enable support for detaching from Flutter apps on exit</li>
+  <li>change the icon used for paint baselines</li>
+  <li>prevent bazel test run configurations from generating in a non-bazel workspace</li>
+  <li>support 2019.1 eap</li>
+  <li>mention 'Dart' in the plugin description</li>
+  <li>correct the bazel output for debugging bazel tests</li>
+  <li>simplify the bazel parameters we pass to Bazel Run configurations</li>
+  <li>pin flutter error events in the log</li>
+  <li>propagate node selections to inspector</li>
+  <li>link support for log data entries</li>
+  <li>fix category cell rendering</li>
+  <li>add sample creation banner</li>
+  <li>add sample apps to Android Studio New Project Wizard</li>
+  <li>update log entry data badge</li>
+</ul>
+<h2>32.0</h2>
+<ul>
+  <li>address an NPE in FlutterWidgetPerfManager.java</li>
+  <li>added overlay renderered for GC, snapshot and memory reset events</li>
+  <li>consolidated all adt-ui API changes in FlutterStudioMonitorStageView</li>
+  <li>support for creating projects w/ sample content from the IDEA New Project Wizard</li>
+  <li>basic ansi color support for entries in the Flutter Logging View</li>
+  <li>restore log level combo to the Logging View</li>
+  <li>support to fill in truncated log entries</li>
+  <li>add keyboard shortcut for widget extraction</li>
+  <li>add debugPaint and debugAllowBanner icons</li>
+  <li>add repaint rainbow icon</li>
+  <li>handle cases where script.tokenPosTable is null</li>
+  <li>auto-hide details pane</li>
+  <li>guard against disposed when querying project type</li>
+  <li>fix an issue with escaped test names</li>
+  <li>refactor service extensions and set button text based on extension state</li>
+  <li>shorten message for debug mode perf disclaimer</li>
+  <li>listen for ServiceExtensionStateChanged events</li>
+  <li>restore service extension states from device on start and attach</li>
+  <li>don't use LOG.error()</li>
+  <li>refactor the Bazel Test configuration to support running tests on a single file or a single test</li>
+  <li>fix enabled/disabled text for service extensions</li>
+  <li>fix NPE in bazel config</li>
+</ul>
+<h2>31.3</h2>
+<ul>
+  <li>fix NPE in sdk installation (#2965)</li>
+  <li>fix NPE caused by internal inconsistency (#2963)</li>
+</ul>
 <h2>31.2</h2>
 <ul>
   <li>show memory profiler legend with proper line chart color or line style</li>
@@ -682,6 +747,7 @@
     <!-- refactoring menu -->
     <action class="io.flutter.actions.ExtractWidgetAction" id="Flutter.ExtractWidget" text="Flutter Widget...">
       <add-to-group group-id="IntroduceActionsGroup" anchor="after" relative-to-action="ExtractMethod"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt W"/>
     </action>
 
     <!-- help menu -->
@@ -691,6 +757,10 @@
 
     <action id="io.flutter.RestartDaemon" class="io.flutter.actions.RestartFlutterDaemonAction"
             text="Restart Flutter Daemon" description="Restart Flutter Daemon" icon="FlutterIcons.Flutter">
+    </action>
+
+    <action id="io.flutter.OpenDevToolsAction" class="io.flutter.run.OpenDevToolsAction"
+            text="Open DevTools" description="Open Dart DevTools" icon="FlutterIcons.Dart_16">
     </action>
   </actions>
 
@@ -708,18 +778,20 @@
 
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
-    <programRunner implementation="io.flutter.run.SdkRunner"/>
+    <programRunner implementation="io.flutter.run.FlutterRunner"/>
+
+    <configurationType implementation="io.flutter.run.test.FlutterTestConfigType"/>
+    <runConfigurationProducer implementation="io.flutter.run.test.FlutterTestConfigProducer"/>
+    <programRunner implementation="io.flutter.run.test.FlutterTestRunner"/>
+    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.test.FlutterTestLineMarkerContributor"/>
 
     <configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
     <programRunner implementation="io.flutter.run.bazel.BazelRunner"/>
 
     <configurationType implementation="io.flutter.run.bazelTest.FlutterBazelTestConfigurationType"/>
+    <runConfigurationProducer implementation="io.flutter.run.bazelTest.BazelTestConfigProducer"/>
     <programRunner implementation="io.flutter.run.bazelTest.BazelTestRunner"/>
-
-    <configurationType implementation="io.flutter.run.test.TestConfigType"/>
-    <runConfigurationProducer implementation="io.flutter.run.test.TestConfigProducer"/>
-    <programRunner implementation="io.flutter.run.test.DebugTestRunner"/>
-    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.test.FlutterTestLineMarkerContributor"/>
+    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.bazelTest.FlutterBazelTestLineMarkerContributor"/>
 
     <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
     <liveTemplateContext implementation="io.flutter.template.DartToplevelTemplateContextType"/>
@@ -770,6 +842,7 @@
     <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.editor.NativeEditorNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.samples.FlutterSampleNotificationProvider"/>
 
     <projectService serviceInterface="io.flutter.run.FlutterReloadManager"
                     serviceImplementation="io.flutter.run.FlutterReloadManager"
@@ -782,6 +855,10 @@
                     overrides="false"/>
     <projectService serviceInterface="io.flutter.perf.FlutterWidgetPerfManager"
                     serviceImplementation="io.flutter.perf.FlutterWidgetPerfManager"
+                    overrides="false"/>
+
+    <projectService serviceInterface="io.flutter.devtools.DevToolsManager"
+                    serviceImplementation="io.flutter.devtools.DevToolsManager"
                     overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>

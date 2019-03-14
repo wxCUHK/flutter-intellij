@@ -77,6 +77,9 @@ class LintCommand extends Command {
       'javax.annotation.Nullable',
       'org.apache.commons.lang3.StringUtils',
       'org.apache.commons.lang3.builder.HashCodeBuilder',
+      // Not technically a bad import, but not all IntelliJ platforms provide
+      // this library.
+      'org.apache.commons.io.',
     ];
 
     for (var import in proscribedImports) {
@@ -84,7 +87,29 @@ class LintCommand extends Command {
 
       final result = Process.runSync(
         'git',
-        ['grep', 'import $import;'],
+        ['grep', 'import $import'],
+      );
+
+      final String results = result.stdout.trim();
+      if (results.isNotEmpty) {
+        print('Found proscribed imports:\n');
+        print(results);
+        return true;
+      } else {
+        print('  none found');
+      }
+    }
+
+    final partialImports = [
+      'com.sun.',
+    ];
+
+    for (var import in partialImports) {
+      print('Checking for import of "$import"...');
+
+      final result = Process.runSync(
+        'git',
+        ['grep', 'import $import'],
       );
 
       final String results = result.stdout.trim();
